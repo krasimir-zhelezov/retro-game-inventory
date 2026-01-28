@@ -76,22 +76,6 @@ app.use(express.json());
 app.use('/api-docs', serve, setup(swaggerSpec));
 app.use(session({ secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev', resave: false, saveUninitialized: false, cookie: { secure: false, maxAge: 60000 * 60 } }));
 
-let games = [
-    { id: 1, title: "Super Mario Bros", genre: "Platformer" },
-    { id: 2, title: "The Legend of Zelda", genre: "Adventure" }
-];
-
-const administrators = [
-    {
-        username: "admin",
-        password: "password123"
-    },
-    {
-        username: "superadmin",
-        password: "67secureAss69"
-    }
-];
-
 const isAuthenticated = (req, res, next) => {
     if (req.session.user) {
         next();
