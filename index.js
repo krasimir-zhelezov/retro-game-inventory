@@ -28,17 +28,23 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use(express.json());
 app.use('/api-docs', serve, setup(swaggerSpec));
-app.use(session({ secret: 'super-secret-key', resave: false, saveUninitialized: false, cookie: { secure: false, maxAge: 60000 * 60 } }));
+app.use(session({ secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev', resave: false, saveUninitialized: false, cookie: { secure: false, maxAge: 60000 * 60 } }));
 
 let games = [
     { id: 1, title: "Super Mario Bros", genre: "Platformer" },
     { id: 2, title: "The Legend of Zelda", genre: "Adventure" }
 ];
 
-const adminUser = {
-    username: "admin",
-    password: "password123"
-};
+const administrators = [
+    {
+        username: "admin",
+        password: "password123"
+    },
+    {
+        username: "superadmin",
+        password: "67secureAss69"
+    }
+];
 
 const isAuthenticated = (req, res, next) => {
     if (req.session.user) {
@@ -196,8 +202,12 @@ app.delete('/games/:id', isAuthenticated, (req, res) => {
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    if (username === adminUser.username && password === adminUser.password) {
-        req.session.user = { username };
+    const validUser = administrators.find(
+        admin => admin.username === username && admin.password === password
+    );
+
+    if (validUser) {
+        req.session.user = { username: validUser.username };
         res.status(200).json({ message: "Login successful" });
     } else {
         res.status(401).json({ message: "Invalid credentials" });
