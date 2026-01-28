@@ -2,9 +2,55 @@ import express from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 import session from 'express-session';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
 const app = express();
 const port = 3000;
+
+let db;
+
+(async () => {
+    try {
+        db = await open({
+            filename: './database.sqlite',
+            driver: sqlite3.Database
+        });
+
+        console.log('Connected to SQLite database.');
+
+        // 1. Create Tables
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS games (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                genre TEXT
+            );
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE,
+                password TEXT
+            );
+        `);
+
+        const gameCount = await db.get('SELECT COUNT(*) as count FROM games');
+        if (gameCount.count === 0) {
+            await db.run(`INSERT INTO games (title, genre) VALUES ('Super Mario Bros', 'Platformer')`);
+            await db.run(`INSERT INTO games (title, genre) VALUES ('The Legend of Zelda', 'Adventure')`);
+            console.log('Seeded games table.');
+        }
+
+        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
+        if (userCount.count === 0) {
+            await db.run(`INSERT INTO users (username, password) VALUES ('admin', 'password123')`);
+            await db.run(`INSERT INTO users (username, password) VALUES ('superadmin', '67secureAss69')`);
+            console.log('Seeded users table.');
+        }
+
+    } catch (error) {
+        console.error('Failed to initialize database:', error);
+    }
+})();
 
 const swaggerOptions = {
     definition: {
@@ -64,8 +110,13 @@ const isAuthenticated = (req, res, next) => {
  *       200:
  *         description: A list of games.
  */
-app.get('/games', isAuthenticated, (req, res) => {
-    res.status(200).json(games);
+app.get('/games', isAuthenticated, async (req, res) => {
+    try {
+        const games = await db.all('SELECT * FROM games');
+        res.status(200).json(games);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -87,15 +138,19 @@ app.get('/games', isAuthenticated, (req, res) => {
  *       404:
  *         description: Game not found.
  */
-app.get('/games/:id', isAuthenticated, (req, res) => {
-    const id = parseInt(req.params.id);
-    const game = games.find(g => g.id === id);
+app.get('/games/:id', isAuthenticated, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const game = await db.get('SELECT * FROM games WHERE id = ?', [id]);
 
-    if (!game) {
-        return res.status(404).send('Game not found');
+        if (!game) {
+            return res.status(404).send('Game not found');
+        }
+
+        res.status(200).json(game);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    res.status(200).json(game);
 });
 
 /**
@@ -119,13 +174,19 @@ app.get('/games/:id', isAuthenticated, (req, res) => {
  *       201:
  *         description: Game created successfully.
  */
-app.post('/games', isAuthenticated, (req, res) => {
-    const newGame = req.body;
-
-    newGame.id = games.length ? games[games.length - 1].id + 1 : 1;
-
-    games.push(newGame);
-    res.status(201).json(newGame);
+app.post('/games', isAuthenticated, async (req, res) => {
+    try {
+        const { title, genre } = req.body;
+        const result = await db.run(
+            'INSERT INTO games (title, genre) VALUES (?, ?)',
+            [title, genre]
+        );
+        
+        const newGame = { id: result.lastID, title, genre };
+        res.status(201).json(newGame);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 /**
@@ -147,17 +208,21 @@ app.post('/games', isAuthenticated, (req, res) => {
  *       404:
  *         description: Game not found.
  */
-app.delete('/games/:id', isAuthenticated, (req, res) => {
-    const id = parseInt(req.params.id);
-    const index = games.findIndex(g => g.id === id);
+app.delete('/games/:id', isAuthenticated, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        const game = await db.get('SELECT * FROM games WHERE id = ?', [id]);
+        
+        if (!game) {
+            return res.status(404).send('Game not found');
+        }
 
-    if (index === -1) {
-        return res.status(404).send('Game not found');
+        await db.run('DELETE FROM games WHERE id = ?', [id]);
+        res.status(200).json(game);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    const deletedGame = games.splice(index, 1);
-
-    res.status(200).json(deletedGame[0]);
 });
 
 /**
@@ -199,18 +264,23 @@ app.delete('/games/:id', isAuthenticated, (req, res) => {
  *       401:
  *         description: Invalid credentials.
  */
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
 
-    const validUser = administrators.find(
-        admin => admin.username === username && admin.password === password
-    );
+        const validUser = await db.get(
+            'SELECT * FROM users WHERE username = ? AND password = ?', 
+            [username, password]
+        );
 
-    if (validUser) {
-        req.session.user = { username: validUser.username };
-        res.status(200).json({ message: "Login successful" });
-    } else {
-        res.status(401).json({ message: "Invalid credentials" });
+        if (validUser) {
+            req.session.user = { username: validUser.username };
+            res.status(200).json({ message: "Login successful" });
+        } else {
+            res.status(401).json({ message: "Invalid credentials" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
