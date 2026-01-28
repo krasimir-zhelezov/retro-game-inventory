@@ -64,7 +64,7 @@ const isAuthenticated = (req, res, next) => {
  *       200:
  *         description: A list of games.
  */
-app.get('/games', (req, res) => {
+app.get('/games', isAuthenticated, (req, res) => {
     res.status(200).json(games);
 });
 
@@ -87,7 +87,7 @@ app.get('/games', (req, res) => {
  *       404:
  *         description: Game not found.
  */
-app.get('/games/:id', (req, res) => {
+app.get('/games/:id', isAuthenticated, (req, res) => {
     const id = parseInt(req.params.id);
     const game = games.find(g => g.id === id);
 
