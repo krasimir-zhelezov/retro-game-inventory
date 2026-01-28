@@ -113,7 +113,7 @@ app.get('/games/:id', (req, res) => {
  *       201:
  *         description: Game created successfully.
  */
-app.post('/games', (req, res) => {
+app.post('/games', isAuthenticated, (req, res) => {
     const newGame = req.body;
 
     newGame.id = games.length ? games[games.length - 1].id + 1 : 1;
@@ -141,7 +141,7 @@ app.post('/games', (req, res) => {
  *       404:
  *         description: Game not found.
  */
-app.delete('/games/:id', (req, res) => {
+app.delete('/games/:id', isAuthenticated, (req, res) => {
     const id = parseInt(req.params.id);
     const index = games.findIndex(g => g.id === id);
 
