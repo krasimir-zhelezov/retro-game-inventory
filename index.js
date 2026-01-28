@@ -4,16 +4,21 @@ import { serve, setup } from 'swagger-ui-express';
 import session from 'express-session';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { createHash } from 'node:crypto';
 
 const app = express();
 const port = 3000;
 
 let db;
 
+const hashPassword = (password) => {
+    return createHash('sha256').update(password).digest('hex');
+};
+
 (async () => {
     try {
         db = await open({
-            filename: './database.sqlite',
+            filename: './db.sqlite',
             driver: sqlite3.Database
         });
 
@@ -42,8 +47,8 @@ let db;
 
         const userCount = await db.get('SELECT COUNT(*) as count FROM users');
         if (userCount.count === 0) {
-            await db.run(`INSERT INTO users (username, password) VALUES ('admin', 'password123')`);
-            await db.run(`INSERT INTO users (username, password) VALUES ('superadmin', '67secureAss69')`);
+            await db.run(`INSERT INTO users (username, password) VALUES ('admin', '${hashPassword('password123')}')`);
+            await db.run(`INSERT INTO users (username, password) VALUES ('superadmin', '${hashPassword('67secureAss69')}')`);
             console.log('Seeded users table.');
         }
 
@@ -165,7 +170,7 @@ app.post('/games', isAuthenticated, async (req, res) => {
             'INSERT INTO games (title, genre) VALUES (?, ?)',
             [title, genre]
         );
-        
+
         const newGame = { id: result.lastID, title, genre };
         res.status(201).json(newGame);
     } catch (err) {
@@ -195,9 +200,9 @@ app.post('/games', isAuthenticated, async (req, res) => {
 app.delete('/games/:id', isAuthenticated, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        
+
         const game = await db.get('SELECT * FROM games WHERE id = ?', [id]);
-        
+
         if (!game) {
             return res.status(404).send('Game not found');
         }
@@ -252,17 +257,19 @@ app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        const validUser = await db.get(
-            'SELECT * FROM users WHERE username = ? AND password = ?', 
-            [username, password]
-        );
+        const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
 
-        if (validUser) {
-            req.session.user = { username: validUser.username };
-            res.status(200).json({ message: "Login successful" });
-        } else {
-            res.status(401).json({ message: "Invalid credentials" });
+        if (user) {
+            const inputHash = hashPassword(password);
+
+            if (inputHash === user.password) {
+                req.session.user = { username: user.username };
+                return res.status(200).json({ message: "Login successful" });
+            }
         }
+
+        res.status(401).json({ message: "Invalid credentials" });
+
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
