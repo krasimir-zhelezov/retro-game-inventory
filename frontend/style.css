@@ -1,0 +1,297 @@
+/* RESET & VARIABLES */
+:root {
+    --primary-color: #4f46e5;
+    --secondary-color: #f3f4f6;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --white: #ffffff;
+    --border-color: #e5e7eb;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--secondary-color);
+    color: var(--text-dark);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+/* LAYOUT CONTAINER */
+.container {
+    display: flex;
+    min-height: 100vh;
+    /* CENTERING CHANGES: Center the main content vertically and horizontally */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* MAIN CONTENT AREA */
+.main-content {
+    /* CENTERING CHANGES: Removed margin-left: 250px and added width constraints */
+    margin: 0;
+    width: 100%;
+    max-width: 1200px;
+    /* Keeps table from stretching too wide on large screens */
+    display: flex;
+    flex-direction: column;
+}
+
+/* DASHBOARD CONTENT */
+.content {
+    padding: 30px;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+}
+
+/* TABLE STYLES */
+.table-container {
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f9fafb;
+}
+
+th,
+td {
+    padding: 15px 20px;
+    /* CENTERING CHANGES: Center text inside table cells */
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    /* Ensures vertical centering in rows */
+}
+
+th {
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+td {
+    font-size: 15px;
+    color: var(--text-dark);
+}
+
+.product-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    /* CENTERING CHANGES: Center the image block */
+    margin: 0 auto;
+}
+
+/* STATUS BADGES */
+.status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.in-stock {
+    background-color: #d1fae5;
+    color: var(--success);
+}
+
+.low-stock {
+    background-color: #fef3c7;
+    color: var(--warning);
+}
+
+.out-stock {
+    background-color: #fee2e2;
+    color: var(--danger);
+}
+
+/* ACTION BUTTONS */
+.action-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 16px;
+    transition: transform 0.2s;
+}
+
+.edit {
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+.delete {
+    color: var(--danger);
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* PAGINATION */
+.pagination {
+    display: flex;
+    /* CENTERING CHANGES: Stack elements and center them */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.pages button {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.pages button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.product-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* specific width for description to prevent massive table */
+.desc-col {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.close-btn {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: black;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input, 
+.form-group textarea,
+.form-group select { /* Added select here */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: white; /* Ensures dropdown isn't transparent */
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}

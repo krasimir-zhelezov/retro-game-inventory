@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products API</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="script.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <main class="main-content">
+            <section class="content">
+                <div class="content-header">
+                    <h1>Product API</h1>
+                    <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add New Product</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Slug</th>
+                                <th>Price</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Images</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                            <tr>
+                                <td colspan="8" style="text-align: center;">Loading products...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Product</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required placeholder="Product Title">
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price ($)</label>
+                    <input type="number" id="price" name="price" required min="1" placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryId">Category</label>
+                    <select id="categoryId" name="categoryId" required>
+                        <option value="" disabled selected>Select a Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required rows="3"
+                        placeholder="Product details..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageUrl">Image URL</label>
+                    <input type="url" id="imageUrl" name="imageUrl" required placeholder="https://example.com/image.jpg"
+                        value="https://placehold.co/600x400">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
