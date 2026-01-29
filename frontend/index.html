@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products API</title>
+    <title>Retro Game Inventory</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="script.js"></script>
@@ -16,8 +16,8 @@
         <main class="main-content">
             <section class="content">
                 <div class="content-header">
-                    <h1>Product API</h1>
-                    <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add New Product</button>
+                    <h1>Game Inventory</h1>
+                    <button class="btn-primary"><i class="fa-solid fa-plus"></i> Add New Game</button>
                 </div>
 
                 <div class="table-container">
@@ -26,17 +26,13 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Title</th>
-                                <th>Slug</th>
-                                <th>Price</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Images</th>
+                                <th>Genre</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body">
                             <tr>
-                                <td colspan="8" style="text-align: center;">Loading products...</td>
+                                <td colspan="4" style="text-align: center;">Loading games...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -48,42 +44,23 @@
     <div id="addProductModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add New Product</h2>
+                <h2>Add New Game</h2>
                 <span class="close-btn">&times;</span>
             </div>
             <form id="addProductForm">
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input type="text" id="title" name="title" required placeholder="Product Title">
+                    <input type="text" id="title" name="title" required placeholder="e.g. Super Mario Bros">
                 </div>
 
                 <div class="form-group">
-                    <label for="price">Price ($)</label>
-                    <input type="number" id="price" name="price" required min="1" placeholder="0.00">
-                </div>
-
-                <div class="form-group">
-                    <label for="categoryId">Category</label>
-                    <select id="categoryId" name="categoryId" required>
-                        <option value="" disabled selected>Select a Category</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" required rows="3"
-                        placeholder="Product details..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="imageUrl">Image URL</label>
-                    <input type="url" id="imageUrl" name="imageUrl" required placeholder="https://example.com/image.jpg"
-                        value="https://placehold.co/600x400">
+                    <label for="genre">Genre</label>
+                    <input type="text" id="genre" name="genre" required placeholder="e.g. Platformer">
                 </div>
 
                 <div class="form-actions">
                     <button type="button" class="btn-secondary cancel-btn">Cancel</button>
-                    <button type="submit" class="btn-primary">Create Product</button>
+                    <button type="submit" class="btn-primary">Create Game</button>
                 </div>
             </form>
         </div>
