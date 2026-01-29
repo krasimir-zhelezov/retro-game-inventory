@@ -299,6 +299,32 @@ app.post('/logout', (req, res) => {
     });
 });
 
+app.put('/games/:id', isAuthenticated, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { title, genre } = req.body;
+
+        // 1. Check if the game exists
+        const game = await db.get('SELECT * FROM games WHERE id = ?', [id]);
+
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        // 2. Perform the update
+        await db.run(
+            'UPDATE games SET title = ?, genre = ? WHERE id = ?',
+            [title, genre, id]
+        );
+
+        // 3. Return the updated game object
+        res.status(200).json({ id, title, genre });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Swagger docs available at http://localhost:${port}/api-docs`);
