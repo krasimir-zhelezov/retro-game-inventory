@@ -5,6 +5,7 @@ import session from 'express-session';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { createHash } from 'node:crypto';
+import cors from 'cors';
 
 const app = express();
 const port = 3000;
@@ -77,6 +78,7 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
+app.use(cors({origin: ['http://127.0.0.1:5500', 'http://localhost:5500'], credentials: true}));
 app.use(express.json());
 app.use('/api-docs', serve, setup(swaggerSpec));
 app.use(session({ secret: process.env.SESSION_SECRET || 'fallback-secret-for-dev', resave: false, saveUninitialized: false, cookie: { secure: false, maxAge: 60000 * 60 } }));
