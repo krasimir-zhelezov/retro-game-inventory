@@ -149,16 +149,6 @@ td {
     color: var(--danger);
 }
 
-/* ACTION BUTTONS */
-.action-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    padding: 5px;
-    font-size: 16px;
-    transition: transform 0.2s;
-}
-
 .edit {
     color: var(--primary-color);
     margin-right: 10px;
@@ -166,10 +156,6 @@ td {
 
 .delete {
     color: var(--danger);
-}
-
-.action-btn:hover {
-    transform: scale(1.1);
 }
 
 /* PAGINATION */
@@ -294,4 +280,29 @@ td {
     padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+/* Style for the Edit button */
+.action-btn.edit {
+    background-color: #f39c12; /* Orange/Yellow for edit */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.action-btn.edit:hover {
+    background-color: #d68910;
+}
+
+/* Existing Delete button style (assuming you have one, ensuring they align) */
+.action-btn.delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
 }

@@ -1,11 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Updated API URL
     const apiUrl = 'http://localhost:3000/games';
     const tableBody = document.getElementById('product-table-body');
 
-    // -- DOM Elements for Modal --
+    // -- DOM Elements --
     const modal = document.getElementById('addProductModal');
-    const openModalBtn = document.querySelector('.btn-primary'); 
+    const openModalBtn = document.querySelector('.btn-primary'); // The "Add New Game" button
     const closeModalBtn = document.querySelector('.close-btn');
     const cancelBtn = document.querySelector('.cancel-btn');
     const addProductForm = document.getElementById('addProductForm');
@@ -13,17 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.querySelector('.modal-header h2');
     const submitBtn = document.querySelector('.form-actions button[type="submit"]');
 
+    // -- State Variable --
+    // We use this to know if we are creating a new game or editing an old one
+    let currentEditId = null; 
+
     // -- Render Row Function --
-    // Adapted to match your 'games' table: id, title, genre
     const renderRow = (game) => {
         const row = document.createElement('tr');
-        row.dataset.rowId = game.id; 
+        row.dataset.rowId = game.id; // Store ID on the row for easy update later
 
         row.innerHTML = `
             <td>#${game.id}</td>
-            <td><strong>${game.title}</strong></td>
-            <td>${game.genre || 'N/A'}</td>
+            <td class="game-title"><strong>${game.title}</strong></td>
+            <td class="game-genre">${game.genre || 'N/A'}</td>
             <td>
+                <button class="action-btn edit" data-id="${game.id}" title="Edit">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                </button>
                 <button class="action-btn delete" data-id="${game.id}" title="Delete">
                     <i class="fa-solid fa-trash"></i> Delete
                 </button>
@@ -36,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(apiUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include' // Important: Sends the session cookie
+        credentials: 'include'
     })
     .then(response => {
         if (response.status === 401) throw new Error('Unauthorized: Please log in first');
@@ -59,19 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resetModal = () => {
         addProductForm.reset();
+        // Reset state to "Add Mode"
+        currentEditId = null;
         modalTitle.textContent = "Add New Game";
         submitBtn.textContent = "Create Game";
+    };
+
+    const closeModal = () => {
+        modal.style.display = 'none';
+        resetModal();
     };
 
     openModalBtn.addEventListener('click', () => {
         resetModal();
         modal.style.display = 'block';
     });
-
-    const closeModal = () => {
-        modal.style.display = 'none';
-        resetModal();
-    };
 
     closeModalBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
@@ -82,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // -- Handle Delete Action --
+    // -- Handle Table Actions (Edit & Delete) --
     tableBody.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
@@ -94,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Are you sure you want to delete Game #${id}?`)) {
                 fetch(`${apiUrl}/${id}`, { 
                     method: 'DELETE',
-                    credentials: 'include' // Sends session cookie
+                    credentials: 'include'
                 })
                 .then(response => {
                     if (response.status === 401) throw new Error('Unauthorized');
@@ -103,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(() => {
                     target.closest('tr').remove();
-                    // Optional: alert('Game deleted successfully');
                 })
                 .catch(error => {
                     console.error('Error deleting:', error);
@@ -111,34 +117,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
+
+        // --- EDIT LOGIC (NEW) ---
+        if (target.classList.contains('edit')) {
+            const row = target.closest('tr');
+            
+            // Get current values from the table row
+            const title = row.querySelector('.game-title').textContent;
+            const genre = row.querySelector('.game-genre').textContent;
+
+            // Populate form
+            document.getElementById('title').value = title;
+            document.getElementById('genre').value = genre;
+
+            // Switch state to "Edit Mode"
+            currentEditId = id;
+            modalTitle.textContent = "Edit Game";
+            submitBtn.textContent = "Update Game";
+
+            // Open Modal
+            modal.style.display = 'block';
+        }
     });
 
-    // -- Handle Create (POST) --
-    // Note: The backend provided does not support PUT (Edit), so this only handles POST.
+    // -- Handle Form Submit (Create OR Edit) --
     addProductForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Ensure you have inputs with IDs "title" and "genre" in your HTML now
         const formData = {
             title: document.getElementById('title').value,
             genre: document.getElementById('genre').value 
         };
 
-        fetch(apiUrl, {
-            method: 'POST',
+        // Determine Method and URL based on state
+        const method = currentEditId ? 'PUT' : 'POST';
+        const url = currentEditId ? `${apiUrl}/${currentEditId}` : apiUrl;
+
+        fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include', // Sends session cookie
+            credentials: 'include',
             body: JSON.stringify(formData)
         })
         .then(response => {
             if (response.status === 401) throw new Error('Unauthorized');
-            if (!response.ok) throw new Error('Failed to create game');
+            if (!response.ok) throw new Error(`Failed to ${currentEditId ? 'update' : 'create'} game`);
             return response.json();
         })
-        .then(newGame => {
-            // Your backend returns the created object directly
-            const newRow = renderRow(newGame);
-            tableBody.appendChild(newRow); // Append to bottom (or insertBefore for top)
+        .then(data => {
+            // "data" is the updated/created game object
+            const newRow = renderRow(data);
+
+            if (currentEditId) {
+                // EDIT MODE: Find existing row and replace it
+                const existingRow = document.querySelector(`tr[data-row-id="${currentEditId}"]`);
+                if (existingRow) {
+                    existingRow.replaceWith(newRow);
+                }
+            } else {
+                // CREATE MODE: Append to bottom
+                tableBody.appendChild(newRow);
+            }
             closeModal();
         })
         .catch(error => {
